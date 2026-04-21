@@ -1,6 +1,6 @@
 # Data source reference
 
-Structures produced by the four collector scripts. When generating the report, Claude reads the `.cache/` files against these schemas.
+Structures produced by the five collector scripts. When generating the report, Claude reads the `.cache/` files against these schemas.
 
 ## 1. `claude_code_sessions.json`
 
@@ -156,10 +156,74 @@ The entire section (until a same-or-higher-level heading) is kept as one entry.
 
 Output is a markdown fragment (not JSON) so it can be inlined directly into the "user notes" section of the report. When there are no entries, an HTML-comment placeholder is emitted.
 
-## 5. Not collected, but easy to add
+## 5. `tencent_meetings.json`
 
-The resources below are not collected in v1. To add one, drop a script in `scripts/` that follows the same CLI convention (`--from/--to/--week/--config/--output`) and add one line to the workflow in `SKILL.md`.
+Source: `scripts/collect_tencent_meeting.py`, reading `.txt` files from `config.tencent_meeting_dir`. When `tencent_meeting_dir` is empty, the collector writes an empty structure and exits (not an error).
+
+Tencent Meeting's AI-generated transcript export follows a fixed filename convention:
+
+```
+<YYYYMMDDHHMMSS>-<room-name>-纪要文本-<N>.txt
+```
+
+Example: `20260413012330-sha7dow的快速会议-纪要文本-1.txt`. The timestamp is the meeting start time in the user's local timezone. Multi-part transcripts (`-2.txt`, `-3.txt`, ...) share the same `<timestamp>-<room>` prefix and are grouped and concatenated in part order.
+
+Body format:
+
+```
+会议主题：<topic>
+
+发言人：<name1>、<name2>
+
+会议摘要：<one-paragraph AI summary>
+
+------------------------------------------------------------------------
+<structured transcript with section headings, numbered points, etc.>
+```
+
+Output schema:
+
+```jsonc
+{
+  "range": { ... },
+  "tencent_meeting_dir": "/Users/sha7dow/Work/Data/tencent-meeting-minutes",
+  "stats": {
+    "dir_exists": true,
+    "files_scanned": 4,
+    "files_unparseable": 0,
+    "meetings_in_range": 3,
+    "total_body_chars": 4591
+  },
+  "meetings": [
+    {
+      "timestamp_utc": "2026-04-12T17:23:30+00:00",
+      "timestamp_local": "2026-04-13T01:23:30+08:00",
+      "file_paths": ["/Users/.../20260413012330-sha7dow的快速会议-纪要文本-1.txt"],
+      "room_name": "sha7dow的快速会议",
+      "part_count": 1,
+      "topic": "AI 工具 Claude 应用演示与电竞阵容讨论",
+      "participants": ["sha7dow", "谢书泱"],
+      "summary": "本次会议演示了 Claude 在 ... 的最优解。",
+      "body_char_count": 1147,
+      "body": "<full transcript body, post-separator>"
+    }
+  ]
+}
+```
+
+**Report integration**:
+- The full `body` is primary input for highlights, key decisions, and category-activity writeups — read it when drafting those sections.
+- Meeting bodies are **not** pasted verbatim into the report. Extract what matters, then link back by date + topic.
+- The appendix lists each meeting (date, room, topic, one-line `summary`), without body.
+- Meetings do not contribute to the time-allocation table (no duration signal).
+
+**Sensitive content**: transcripts are verbatim conversation summaries and may include informal / personal discussion (recurring casual meetings will mix work and non-work). No filtering is performed in the collector; it's up to the report-generation step to decide what to surface.
+
+## 6. Not collected, but easy to add
+
+The resources below are not collected. To add one, drop a script in `scripts/` that follows the same CLI convention (`--from/--to/--week/--config/--output`) and add one line to the workflow in `SKILL.md`.
 
 - Linear/Jira: needs an extra API token
 - macOS Calendar: needs Full Disk Access + parsing the `Calendar.app` database
 - Obsidian daily notes: merge into the braindump logic
+- Zoom/Google Meet transcripts: same shape as Tencent — write a sibling collector

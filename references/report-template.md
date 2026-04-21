@@ -10,7 +10,7 @@ Filename: `reports/YYYY-Www.md`, using the ISO week number (Monday-starting). Ex
 # 2026-W15 Weekly Review (2026-04-13 ~ 2026-04-19, Asia/Shanghai)
 
 > Generated: 2026-04-20 10:00
-> Data coverage: 17 substantive + 9 exploratory Claude Code sessions; 7 PRs / 2 issues / 54 GitHub events; 38 local commits across 6 repos; 5 braindump entries.
+> Data coverage: 17 substantive + 9 exploratory Claude Code sessions; 7 PRs / 2 issues / 54 GitHub events; 38 local commits across 6 repos; 5 braindump entries; 3 Tencent Meeting minutes.
 
 ## Highlights (TL;DR)
 - The 3–5 things most worth remembering, one line each.
@@ -41,12 +41,12 @@ Shares are **rough estimates**, weighted by message count — precision is not t
 
 ## Key decisions
 
-For each **choice made this week that will affect the future**, write a short block:
+For each **choice made this week that will affect the future**, write a short block. Meeting bodies are often the richest source here — when drafting, read the full transcript under each relevant meeting and distill what was actually decided.
 
 - **Decision**: replace X with Y
 - **Context**: X was causing … under high concurrency
 - **Outcome**: keeping X for now; re-evaluate after next week's load test
-- **Where to look it up again**: session xxx / PR #42 / braindump 2026-04-15
+- **Where to look it up again**: session xxx / PR #42 / braindump 2026-04-15 / meeting 2026-04-14 "Topic A"
 
 ## Reflection
 
@@ -93,15 +93,27 @@ For each **choice made this week that will affect the future**, write a short bl
 - ...
 
 </details>
+
+<details>
+<summary>Tencent Meeting minutes (N meetings)</summary>
+
+- 2026-04-13 01:23 `<room>` — "<topic>" (participant1, participant2)
+  - Summary: <one-line 会议摘要>
+- ...
+
+Body is intentionally not included here — pull quotes and decisions into the body of the report and link back by date + topic.
+
+</details>
 ```
 
 ## Principles when generating
 
 1. **Don't fabricate.** Every factual claim must be traceable to `.cache/*.json` or the original jsonl.
 2. **Short beats vague.** "Replaced X with Y" is better than "performed architectural optimization."
-3. **Back time shares with data.** Weight by messages + commits + PRs, not gut feel.
-4. **Keep the links.** Embed jsonl paths, PR URLs, commit SHAs in the report so you can retrace later.
+3. **Back time shares with data.** Weight by messages + commits + PRs, not gut feel. Meetings contribute to context, not to the time-share table (no duration signal).
+4. **Keep the links.** Embed jsonl paths, PR URLs, commit SHAs, and meeting date+topic in the report so you can retrace later.
 5. **Always write reflection.** If the data isn't enough for real reflection, say exactly that: "the data this week doesn't support clear reflection — remember to log braindump next time."
+6. **Meetings are input, not output.** Read the full `body` of each meeting when drafting highlights, decisions, and activity sections. Do not paste transcript chunks into the report body — extract and re-express.
 
 ## Self-check
 

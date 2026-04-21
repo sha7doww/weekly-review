@@ -1,6 +1,6 @@
 ---
 name: weekly-review
-description: Generate a personal weekly review report by aggregating Claude Code conversations, GitHub PR/issue activity, local git commits, and user braindump entries for a fixed ISO-week date range.
+description: Generate a personal weekly review report by aggregating Claude Code conversations, GitHub PR/issue activity, local git commits, user braindump entries, and Tencent Meeting minutes for a fixed ISO-week date range.
 triggers:
   - write weekly review
   - generate weekly review
@@ -19,7 +19,7 @@ arguments:
 
 # weekly-review
 
-Generate an inward-facing weekly review. Aggregate 4 data sources (Claude Code conversations, GitHub PR/Issue/events, local git commits, user braindump), then do the clustering, time-share estimation, key-decision writeup, reflection, and next-week plan yourself.
+Generate an inward-facing weekly review. Aggregate 5 data sources (Claude Code conversations, GitHub PR/Issue/events, local git commits, user braindump, Tencent Meeting minutes), then do the clustering, time-share estimation, key-decision writeup, reflection, and next-week plan yourself.
 
 **"A week" is always the 7 days the user explicitly names, or the complete ISO week immediately before the current one** — never "the last 7 days from today."
 
@@ -42,7 +42,8 @@ Interactively ask the user and write `$SKILL_DIR/config.json`, using `$SKILL_DIR
 3. `local_git_dirs`: default `~/Work/Projects`; let the user confirm or append.
 4. `timezone`: default `Asia/Shanghai`; let the user confirm.
 5. `braindump_path`: default `~/Documents/weekly-braindump.md`; let the user confirm or change.
-6. `session_min_messages` (default 3), `session_min_duration_seconds` (default 120), `exclude_project_cwds` (default `[]`): mention that these can be edited later in `config.json`.
+6. `tencent_meeting_dir`: default empty (collector skipped). If the user has Tencent Meeting minutes auto-routed to a directory, point this at it (e.g. `~/Work/Data/tencent-meeting-minutes`). The collector looks for files named `<YYYYMMDDHHMMSS>-<room>-纪要文本-<N>.txt`.
+7. `session_min_messages` (default 3), `session_min_duration_seconds` (default 120), `exclude_project_cwds` (default `[]`): mention that these can be edited later in `config.json`.
 
 After writing, read the fields back to the user for a final glance. Then move into the execution flow.
 
@@ -64,29 +65,31 @@ Run from `$SKILL_DIR` (substituting the actual `--week` or `--from/--to` values)
 
 ```bash
 cd "$SKILL_DIR"
-python3 scripts/collect_claude_code.py --week 2026-W15 --output .cache/claude_code_sessions.json &
-python3 scripts/collect_github.py      --week 2026-W15 --output .cache/github.json &
-python3 scripts/collect_local_git.py   --week 2026-W15 --output .cache/local_git.json &
-python3 scripts/collect_braindump.py   --week 2026-W15 --output .cache/braindump.md &
+python3 scripts/collect_claude_code.py     --week 2026-W15 --output .cache/claude_code_sessions.json &
+python3 scripts/collect_github.py          --week 2026-W15 --output .cache/github.json &
+python3 scripts/collect_local_git.py       --week 2026-W15 --output .cache/local_git.json &
+python3 scripts/collect_braindump.py       --week 2026-W15 --output .cache/braindump.md &
+python3 scripts/collect_tencent_meeting.py --week 2026-W15 --output .cache/tencent_meetings.json &
 wait
 ```
 
-(In Claude Code the way to run these in parallel is "4 Bash tool calls in a single message"; a single shell `& wait` is fine too — pick your style.)
+(In Claude Code the way to run these in parallel is "5 Bash tool calls in a single message"; a single shell `& wait` is fine too — pick your style.)
 
 If any script exits non-zero: read stderr and tell the user what went wrong (common causes: `gh` not logged in, empty `git_authors`, misspelled timezone). **Do not continue to report generation yet.**
 
 ### 3. Read and categorize
 
-Read the four files plus `config.json`:
+Read the five files plus `config.json`:
 
 - `.cache/claude_code_sessions.json`
 - `.cache/github.json`
 - `.cache/local_git.json`
 - `.cache/braindump.md`
+- `.cache/tencent_meetings.json`
 - `config.json` — focus on the `categories` field
 
 **Categorization rules**:
-- `categories` is empty → first run: skim every session's `first_user_message` and every commit's `subject`, cluster into 5–8 natural categories (e.g. "Eng: Project A", "Eng: Project B", "Collaboration", "Learning/exploration", "Misc"). Give each category a `name` and 3–8 `keywords`. Show your grouping to the user for confirmation, then append to `config.json.categories` (with `source: "auto"` and `added_at` = today).
+- `categories` is empty → first run: skim every session's `first_user_message`, every commit's `subject`, and every meeting's `topic`/`summary`; cluster into 5–8 natural categories (e.g. "Eng: Project A", "Eng: Project B", "Collaboration", "Learning/exploration", "Misc"). Give each category a `name` and 3–8 `keywords`. Show your grouping to the user for confirmation, then append to `config.json.categories` (with `source: "auto"` and `added_at` = today).
 - `categories` is non-empty → assign entries to existing categories by keyword match; if you see a consistent, significant new pattern, propose a new category and append after user confirmation.
 - Any category with no activity for > 4 weeks → flag in the appendix: "Category X has had no activity for N weeks — archive?"
 
@@ -98,13 +101,13 @@ Follow `references/report-template.md`. Key sections:
 
 - **Highlights**: TL;DR, 3–5 bullets.
 - **Activity by category**: what was actually done in each, with commit SHAs / PR #s / jsonl path references.
-- **Time allocation table**: estimate share using Claude Code message counts + commit counts + PR counts per category.
-- **Key decisions**: choices made this week that will affect the future. For each: decision / context / outcome / how to retrieve the original discussion.
+- **Time allocation table**: estimate share using Claude Code message counts + commit counts + PR counts per category. Meetings do **not** contribute to this table (duration can't be inferred from minutes).
+- **Key decisions**: choices made this week that will affect the future. For each: decision / context / outcome / how to retrieve the original discussion. Meeting bodies are a prime source — treat the full transcript under each meeting's `body` field as primary input here.
 - **Reflection**: what went well / what to improve — 2–4 each. If the data isn't enough, say so honestly.
 - **Next week**: P0/P1/P2.
-- **Appendix**: session list, exploratory aggregate, commit detail.
+- **Appendix**: session list, exploratory aggregate, commit detail, meetings list (with date + room + topic + one-line `summary`, no body).
 
-Exploratory sessions collapse to a single line by default; if one has a standout first message, you can call it out individually.
+Exploratory sessions collapse to a single line by default; if one has a standout first message, you can call it out individually. Meetings are always listed individually in the appendix (each one is a distinct event), but their content is **not** pasted into the report body — extract decisions, action items, and context into the appropriate sections (Highlights / Key decisions / Category activity), and link back to the meeting by date and topic for traceback.
 
 **Do not fabricate.** Every factual claim must be traceable to the collected data.
 
@@ -144,3 +147,4 @@ Tell the user:
 | `claude_code_sessions.json` is empty but you know you used it that week | `exclude_project_cwds` filtered it out / wrong timezone | check config; `ls -la ~/.claude/projects/` to see mtimes |
 | Script errors with `ZoneInfoNotFoundError` | timezone string misspelled | test with `python3 -c "import zoneinfo; zoneinfo.ZoneInfo('Asia/Shanghai')"` |
 | Few commits in the report but you definitely committed locally | `git_authors` not matching (e.g. you switched emails) | add the new email/name to `config.json.git_authors` |
+| `tencent_meetings.json` is empty but you know you had meetings | `tencent_meeting_dir` is empty / wrong path / no files land there | check config and `ls <dir>`; make sure the export filename still follows `<14-digit>-<room>-纪要文本-<N>.txt` |

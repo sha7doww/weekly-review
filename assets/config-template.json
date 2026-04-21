@@ -5,6 +5,7 @@
   "timezone": "Asia/Shanghai",
   "identity_blurb": "",
   "braindump_path": "",
+  "tencent_meeting_dir": "",
   "session_min_messages": 3,
   "session_min_duration_seconds": 120,
   "exclude_project_cwds": [],

@@ -2,11 +2,12 @@
 
 A Claude Code skill that generates a personal, inward-facing weekly review report.
 
-It aggregates four data sources to reconstruct what you actually did in a given week:
+It aggregates five data sources to reconstruct what you actually did in a given week:
 1. **Claude Code conversations** (`~/.claude/projects/`)
 2. **GitHub PRs / issues / events** (public + private repos, via the `gh` CLI)
 3. **Local git commits** (all configured directories, including commits that were never pushed)
 4. **User braindump** (a plain markdown file where you jot things down day to day)
+5. **Tencent Meeting minutes** (optional — AI-generated `.txt` transcripts auto-routed to a local directory)
 
 Claude does the clustering, time-share estimation, key-decision writeup, reflection, and next-week planning.
 
@@ -41,13 +42,14 @@ You should see a symlink pointing to this project.
 
 In any Claude Code session, say something like "write a weekly review" or "generate weekly review".
 
-On the first run, the skill asks you 5 questions to create `config.json`:
+On the first run, the skill asks you 6 questions to create `config.json`:
 
 1. GitHub username (default read from `gh api user`)
 2. Git author identities (default read from `git config --global user.{email,name}`; you can add more)
 3. Local git directories (default `~/Work/Projects`)
 4. Timezone (default `Asia/Shanghai`)
 5. Braindump file path (default `~/Documents/weekly-braindump.md`; an empty file is created if it doesn't exist)
+6. Tencent Meeting minutes directory (default empty — skip the collector; point this at the directory where Tencent Meeting `.txt` exports land if you want meetings folded into the review)
 
 All subsequent runs go straight to execution. Field reference: [`references/config-guide.md`](references/config-guide.md).
 
@@ -103,7 +105,8 @@ weekly-review/
 │   ├── collect_claude_code.py
 │   ├── collect_github.py
 │   ├── collect_local_git.py
-│   └── collect_braindump.py
+│   ├── collect_braindump.py
+│   └── collect_tencent_meeting.py
 ├── reports/              # output (gitignored)
 │   └── 2026-W15.md
 └── .cache/               # collector intermediate files (gitignored, safe to delete)
@@ -125,8 +128,21 @@ python3 scripts/collect_github.py --week 2026-W15 --output .cache/github.json
 # explicit date range
 python3 scripts/collect_local_git.py --from 2026-04-13 --to 2026-04-19 --output .cache/local_git.json
 
+# tencent meeting minutes (requires config.tencent_meeting_dir to be set)
+python3 scripts/collect_tencent_meeting.py --week 2026-W15 --output .cache/tencent_meetings.json
+
 # the `[range]` line on stderr confirms the timezone conversion
 ```
+
+## Tencent Meeting minutes (optional)
+
+To fold Tencent Meeting AI-generated transcripts into the review:
+
+1. Arrange for exports to land in a directory of your choice (the [`TENCENT_MEETING.md`](TENCENT_MEETING.md) sidecar walks through a launchd-based auto-router for `~/Downloads`).
+2. Set `tencent_meeting_dir` in `config.json` to that directory.
+3. The collector picks up `.txt` files named `<YYYYMMDDHHMMSS>-<room>-纪要文本-<N>.txt` and uses the embedded `会议主题` / `发言人` / `会议摘要` header plus the transcript body.
+
+Meeting content feeds into the *highlights* and *key decisions* sections of the report; a per-meeting appendix lists date / room / topic / summary for traceback. Meetings do not count toward the time-allocation table.
 
 ## What this skill deliberately does *not* do
 
