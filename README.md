@@ -94,6 +94,8 @@ weekly-review/
 ├── README.md             # this file
 ├── README_zh.md          # Chinese translation
 ├── config.json           # your config (gitignored, created on first run)
+├── docs/                 # sidecar docs for integrations and setup
+│   └── TENCENT_MEETING.md
 ├── assets/
 │   └── config-template.json
 ├── references/
@@ -138,7 +140,7 @@ python3 scripts/collect_tencent_meeting.py --week 2026-W15 --output .cache/tence
 
 To fold Tencent Meeting AI-generated transcripts into the review:
 
-1. Arrange for exports to land in a directory of your choice (the [`TENCENT_MEETING.md`](TENCENT_MEETING.md) sidecar walks through a launchd-based auto-router for `~/Downloads`).
+1. Arrange for exports to land in a directory of your choice ([`docs/TENCENT_MEETING.md`](docs/TENCENT_MEETING.md) walks through a launchd-based auto-router for `~/Downloads`).
 2. Set `tencent_meeting_dir` in `config.json` to that directory.
 3. The collector picks up `.txt` files named `<YYYYMMDDHHMMSS>-<room>-纪要文本-<N>.txt` and uses the embedded `会议主题` / `发言人` / `会议摘要` header plus the transcript body.
 

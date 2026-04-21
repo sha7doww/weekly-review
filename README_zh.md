@@ -94,6 +94,8 @@ weekly-review/
 ├── README.md             # 英文版（当前仓库默认）
 ├── README_zh.md          # 本文
 ├── config.json           # 你的配置（gitignored，首次运行生成）
+├── docs/                 # 集成 / 部署 sidecar 文档
+│   └── TENCENT_MEETING.md
 ├── assets/
 │   └── config-template.json
 ├── references/
@@ -138,7 +140,7 @@ python3 scripts/collect_tencent_meeting.py --week 2026-W15 --output .cache/tence
 
 想把腾讯会议的 AI 纪要并入周报：
 
-1. 让导出的 `.txt` 文件稳定落到某个目录（参见 [`TENCENT_MEETING.md`](TENCENT_MEETING.md) — 基于 launchd 的 `~/Downloads` 自动路由方案）
+1. 让导出的 `.txt` 文件稳定落到某个目录（参见 [`docs/TENCENT_MEETING.md`](docs/TENCENT_MEETING.md) — 基于 launchd 的 `~/Downloads` 自动路由方案）
 2. 在 `config.json` 里把 `tencent_meeting_dir` 指向那个目录
 3. 采集脚本按 `<YYYYMMDDHHMMSS>-<room>-纪要文本-<N>.txt` 文件名模式抓取，解析 `会议主题` / `发言人` / `会议摘要` header 和正文
 
