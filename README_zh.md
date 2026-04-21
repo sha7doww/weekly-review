@@ -4,11 +4,12 @@
 
 > 英文版见 [`README.md`](README.md)，这是保留的中文版。
 
-聚合四个数据源来还原一周做了什么：
+聚合五个数据源来还原一周做了什么：
 1. **Claude Code 对话记录**（`~/.claude/projects/`）
 2. **GitHub PR / Issue / Events**（公开 + 私有仓库，通过 `gh` CLI）
 3. **本地 git commits**（配置的所有目录，包括没 push 的）
 4. **用户 braindump**（一个纯 markdown 文件，自己随手记的日记）
+5. **腾讯会议纪要**（可选 — AI 生成的 `.txt` 纪要文本，自动归档到本地目录）
 
 由 Claude 完成归类、时间分配估算、关键决策梳理、反思和下周计划。
 
@@ -41,13 +42,14 @@ ls -la ~/.claude/skills/weekly-review
 
 在任何 Claude Code session 里输入 "写周报" 或 "生成周报"。
 
-第一次会问你 5 个问题来生成 `config.json`：
+第一次会问你 6 个问题来生成 `config.json`：
 
 1. GitHub 用户名（默认从 `gh api user` 读）
 2. Git 作者身份列表（默认从 `git config --global user.{email,name}` 读，可以加别的）
 3. 本地 git 目录（默认 `~/Work/Projects`）
 4. 时区（默认 `Asia/Shanghai`）
 5. Braindump 文件路径（默认 `~/Documents/weekly-braindump.md`，不存在会自动创建空文件）
+6. 腾讯会议纪要目录（默认空 — 跳过采集。如果你把腾讯会议导出的 `.txt` 纪要固定放到某个目录，填上路径即可把会议并入周报）
 
 之后的任何一次调用都会直接执行。字段说明见 [`references/config-guide.md`](references/config-guide.md)。
 
@@ -103,7 +105,8 @@ weekly-review/
 │   ├── collect_claude_code.py
 │   ├── collect_github.py
 │   ├── collect_local_git.py
-│   └── collect_braindump.py
+│   ├── collect_braindump.py
+│   └── collect_tencent_meeting.py
 ├── reports/              # 产物（gitignored）
 │   └── 2026-W15.md
 └── .cache/               # 采集脚本中间产物（gitignored，可删）
@@ -125,8 +128,21 @@ python3 scripts/collect_github.py --week 2026-W15 --output .cache/github.json
 # 显式指定日期范围
 python3 scripts/collect_local_git.py --from 2026-04-13 --to 2026-04-19 --output .cache/local_git.json
 
+# 腾讯会议纪要（需要先在 config.json 里配 tencent_meeting_dir）
+python3 scripts/collect_tencent_meeting.py --week 2026-W15 --output .cache/tencent_meetings.json
+
 # 看 stderr 里的 range 打印确认时区正确
 ```
+
+## 腾讯会议纪要（可选）
+
+想把腾讯会议的 AI 纪要并入周报：
+
+1. 让导出的 `.txt` 文件稳定落到某个目录（参见 [`TENCENT_MEETING.md`](TENCENT_MEETING.md) — 基于 launchd 的 `~/Downloads` 自动路由方案）
+2. 在 `config.json` 里把 `tencent_meeting_dir` 指向那个目录
+3. 采集脚本按 `<YYYYMMDDHHMMSS>-<room>-纪要文本-<N>.txt` 文件名模式抓取，解析 `会议主题` / `发言人` / `会议摘要` header 和正文
+
+会议内容会进入周报的 *亮点* 和 *关键决策*，附录给每场会议一行元数据（日期 / 会议室 / 主题 / 摘要）方便回溯。会议不计入时间占比表（纪要里没有时长信号）。
 
 ## 不会做的事
 
