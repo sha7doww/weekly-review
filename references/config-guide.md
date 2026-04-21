@@ -10,6 +10,7 @@
 | `timezone` | string | IANA timezone, e.g. `Asia/Shanghai`, `America/Los_Angeles` | `Asia/Shanghai` |
 | `identity_blurb` | string | Opening blurb for outward-facing reports (unused in v1) | `""` |
 | `braindump_path` | string | Path to the freeform braindump file; `~` is expanded | suggested: `~/Documents/weekly-braindump.md` |
+| `tencent_meeting_dir` | string | Directory holding Tencent Meeting `.txt` exports. `~` is expanded. Empty string disables the collector. | `""` (skipped unless set) |
 | `session_min_messages` | int | Claude Code sessions with fewer user messages than this are tagged exploratory | `3` |
 | `session_min_duration_seconds` | int | Sessions shorter than this are tagged exploratory | `120` |
 | `exclude_project_cwds` | string[] | Claude Code project cwds to skip (e.g. throwaway experiment dirs) | `[]` |
