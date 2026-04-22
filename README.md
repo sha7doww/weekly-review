@@ -28,7 +28,7 @@ mkdir -p ~/.claude/skills
 ln -s "$(pwd)" ~/.claude/skills/weekly-review
 ```
 
-(Run `$(pwd)` from this project's root. You can also use an absolute path like `/Users/you/Work/Projects/weekly-review`.)
+(Run `$(pwd)` from this project's root. You can also use an absolute path like `/Users/you/Work/Tools/weekly-review`.)
 
 Verify:
 

@@ -16,12 +16,12 @@ Source: `scripts/collect_claude_code.py`, scanning `~/.claude/projects/<encoded-
     "substantive_sessions": 17,
     "exploratory_sessions": 9,
     "total_user_messages": 234,
-    "user_messages_by_project": { "/Users/sha7dow/Work/Projects/AutoIdea": 120, ... }
+    "user_messages_by_project": { "/Users/sha7dow/Work/Tools/AutoIdea": 120, ... }
   },
   "sessions": [
     {
       "session_id": "f87d1df9-...",
-      "cwd": "/Users/sha7dow/Work/Projects/AutoIdea",
+      "cwd": "/Users/sha7dow/Work/Tools/AutoIdea",
       "jsonl_path": "/Users/sha7dow/.claude/projects/-Users-.../f87d1df9-....jsonl",
       "git_branch": "main",
       "start_utc": "2026-04-13T02:15:30+00:00",
@@ -101,7 +101,7 @@ Source: `scripts/collect_local_git.py`, scanning every `.git` repo under `config
   "stats": { "repos_with_activity": 6, "total_commits": 38, "total_insertions": 1200, "total_deletions": 430 },
   "repos": [
     {
-      "repo": "/Users/sha7dow/Work/Projects/AutoIdea",
+      "repo": "/Users/sha7dow/Work/Tools/AutoIdea",
       "remote": "git@github.com:sha7doww/AutoIdea.git",
       "current_branch": "main",
       "commits": [

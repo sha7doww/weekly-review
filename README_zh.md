@@ -28,7 +28,7 @@ mkdir -p ~/.claude/skills
 ln -s "$(pwd)" ~/.claude/skills/weekly-review
 ```
 
-（`$(pwd)` 要在本项目根目录执行。也可以改成绝对路径 `/Users/you/Work/Projects/weekly-review`。）
+（`$(pwd)` 要在本项目根目录执行。也可以改成绝对路径 `/Users/you/Work/Tools/weekly-review`。）
 
 验证：
 
