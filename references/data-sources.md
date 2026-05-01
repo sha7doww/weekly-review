@@ -102,7 +102,7 @@ Source: `scripts/collect_local_git.py`, scanning every `.git` repo under `config
   "repos": [
     {
       "repo": "/Users/sha7dow/Work/Tools/AutoIdea",
-      "remote": "git@github.com:sha7doww/AutoIdea.git",
+      "remote": "git@github.com:xieTwim/AutoIdea.git",
       "current_branch": "main",
       "commits": [
         {
